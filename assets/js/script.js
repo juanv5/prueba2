@@ -87,7 +87,7 @@
                 animationEnabled: true,
                 title: {
                     text: `Estadisticas de Poder para Deadpool`,
-                },
+                };
                 data: [{
                     type: "pie",
                     startAngle: 25,
