@@ -98,7 +98,7 @@
                     indexLabel: "{label} - {y}",
                     dataPoints: estadisticas,
                 }, ],
-            };
+            },
 
             let chart = new CanvasJS.Chart("super-chart", config);
             chart.render();
