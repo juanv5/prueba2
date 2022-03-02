@@ -7,7 +7,7 @@
 
             // validar los personajes
             if (id > 731)
-                alert('Solo existen 800 SuperHeros. Por favor ingrese un número entre 1 y 800')
+                alert('Solo existen 732 SuperHeros. Por favor ingrese un número entre 1 y 732')
 
             // llamando a la api
             $.ajax({
