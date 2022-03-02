@@ -1,62 +1,107 @@
-const heroNombre = document.querySelector("#hero-nombre")
-const heroBando = document.querySelector("#hero-bando")
-const heroTabla = document.querySelector("#hero-tabla")
-const heroImagen = document.querySelector("#hero-imagen")
-const heroFormulario = document.querySelector("#hero-formulario")
-const heroBuscar = document.querySelector("#hero-buscar")
+(function($) {
+    $(document).ready(function() {
+        $('#super-form').submit(function(e) {
+            e.preventDefault()
 
-const grafico = (d) => {
-    console.log(d)
-    let estadisticas = [] // variable arreglo vacio
+            let id = $('#super-id').val()
 
-    Object.entries(d.powerstats).forEach((s) => {  
-        estadisticas.push({ 
-            label: s[0], 
-            y: s[1], 
+            // validar los personajes
+            if (id > 731)
+                alert('Solo existen 800 SuperHeros. Por favor ingrese un número entre 1 y 800')
+
+            // llamando a la api
+            $.ajax({
+                url: `https://superheroapi.com/api.php/4379517335406144/${id}`,
+                success: function(data) {
+                    console.log(data)
+                    const { response, powerstats, error } = data
+                    if (response === 'success') {
+                        createDetail(data)
+                        createCanvas(powerstats)
+                    } else {
+                        alert(error)
+                    }
+                },
+                error: function(e) {
+                    console.log(e)
+                }
+            })
+
         })
-    })
 
-    let config = {
-        data: [
-            {
-                type: "pie",
+        function createDetail(data) {
+            const { name, image, connections, biography, work, appearance } = data
+
+            let constructor = `
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-7 mb-4">
+                            <div class="offset-md-5">
+                                <h4>SuperHero Encontrado</h4>
+                            </div>
+                            <div class="card">
+                                <div class="row g-0">
+                                    <div class="col-md-5">
+                                        <img src="${image.url}"
+                                            class="img-fluid" alt="ImageHero">
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Nombre: ${name}</h5>
+                                            <p class="card-text">Conexiones: ${connections['group-affiliation']}</p>
+                                            <p class="card-text px-3 py-2 mb-1 border-bottom"><span class="fst-italic">Publicado por:</span> ${biography.publisher}</p>
+                                            <p class="card-text px-3 py-2 mb-1 border-bottom"><span class="fst-italic">Ocupación:</span> ${work.occupation}</p>
+                                            <p class="card-text px-3 py-2 mb-1 border-bottom"><span class="fst-italic">Primera Aparición:</span> ${biography['first-appearance']}</p>
+                                            <p class="card-text px-3 py-2 mb-1 border-bottom"><span class="fst-italic">Altura:</span> ${appearance.height.join(' - ')}</p>
+                                            <p class="card-text px-3 py-2 mb-1 border-bottom"><span class="fst-italic">Peso:</span> ${appearance.weight.join(' - ')}</p>
+                                            <p class="card-text px-3 py-2 mb-0"><span class="fst-italic">Alianzas:</span> ${biography.aliases.join(' ')}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div id="super-chart" style="height: 420px; width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            `
+
+            $('#super-detail').html(constructor)
+        }
+
+        function createCanvas(powerstats) {
+            const { intelligence, strength, speed, durability, power, combat } = powerstats
+
+            let estadisticas = [
+                { y: intelligence, label: "intelligence" },
+                { y: strength, label: "strength" },
+                { y: speed, label: "speed" },
+                { y: durability, label: "durability" },
+                { y: power, label: "power" },
+                { y: combat, label: "combat" }
+            ];
+
+            let config = {
+                theme: "light1",
                 animationEnabled: true,
-                //startAngle: 25,
-                toolTipContent: "<b>{label}</b>: {y}%",
-                showInLegend: "true",
-                legendText: "{label}",
-                indexLabelFontSize: 16,
-                indexLabel: "{label} - {y}%",
-                dataPoints: estadisticas,
-            }
-        ]
-    }
-console.log(estadisticas)
-    let chart = new CanvasJS.Chart("estadisticas", config)
+                title: {
+                    text: `Estadisticas de Poder para Deadpool`,
+                },
+                data: [{
+                    type: "pie",
+                    startAngle: 25,
+                    toolTipContent: "<b>{label}</b>: {y}",
+                    showInLegend: "true",
+                    legendText: "{label} - {y}",
+                    indexLabelFontSize: 16,
+                    indexLabel: "{label} - {y}",
+                    dataPoints: estadisticas,
+                }, ],
+            };
 
-    chart.render()
-
-}
-
-
-heroFormulario.addEventListener("submit", (event) => {
-    event.preventDefault()
-    const hero = heroBuscar.value
-    fetch(`https://superheroapi.com/api.php/4905856019427443/${hero}`).then((respuesta) => {
-        respuesta.json().then((data) => {
-            console.log(data)
-            grafico(data)
-            const nombre = data.name
-            const bando = data.biography.alignment
-            const imagen = data.biography.alignment
-            heroNombre.innerHTML = nombre
-            heroBando.innerHTML = bando
-            heroTabla.innerHTML = `
-            <tr>
-                <td>Bando</td>
-                <td>${bando}</td>
-            </tr>
-            `;
-        })
-    })
-})
+            let chart = new CanvasJS.Chart("super-chart", config);
+            chart.render();
+        }
+    });
+})(jQuery);
